@@ -23,8 +23,7 @@ pub fn get_hip_patch_version() -> std::io::Result<String> {
 /// Return the HIP path suitable for LD_LIBRARY_PATH.
 pub fn get_hip_ld_library_path() -> std::io::Result<String> {
     let rocm_path = get_rocm_path()?;
-    let lib_dir = get_hip_library_directory_name(&rocm_path)?;
-    Ok(format!("{rocm_path}/{lib_dir}"))
+    Ok(format!("{rocm_path}/lib"))
 }
 
 /// Return the include path for HIP
@@ -102,26 +101,6 @@ fn parse_hip_patch_number(version: &str) -> std::io::Result<String> {
     panic!("Error retrieving HIP patch number from value '{version}'")
 }
 
-/// Return the library directory using hipconfig
-fn get_hip_library_directory_name(rocm_path: &str) -> std::io::Result<String> {
-    let clang_path = exec_hipconfig(&["-l"])?;
-    parse_hip_library_directory_name(rocm_path, &clang_path)
-}
-
-/// Parse out the first subdirectory under the ROCm path
-fn parse_hip_library_directory_name(rocm_path: &str, clang_path: &str) -> std::io::Result<String> {
-    let rocm = rocm_path.trim().trim_end_matches('/');
-    let clang = clang_path.trim();
-    // Build a regex like "^/opt/rocm/([^/]+)"
-    let pattern = format!(r"^{}\/([^/]+)", regex::escape(rocm));
-    let re = Regex::new(&pattern).expect("regex should compile");
-
-    if let Some(caps) = re.captures(clang) {
-        return Ok(caps[1].to_string());
-    }
-    panic!("Cannot retrieve the name of the HIP library directoy.");
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -146,39 +125,6 @@ mod tests {
             }
             None => {
                 assert!(result.is_err(), "should panic for invalid version output");
-            }
-        }
-    }
-
-    #[rstest]
-    #[case::standard("/opt/rocm\n", "/opt/rocm/lib/llvm/bin\n", Some("lib"))]
-    #[case::lib64("/usr/local/rocm\n", "/usr/local/rocm/lib64/x86_64\n", Some("lib64"))]
-    #[case::trailing_slash("/opt/rocm/\n", "/opt/rocm/lib/foo\n", Some("lib"))]
-    #[case::no_match("/opt/rocm\n", "/other/path/lib\n", None)]
-    #[case::no_component("/opt/rocm\n", "/opt/rocm/\n", None)]
-    fn test_parse_hip_library_directory_name(
-        #[case] rocm: &str,
-        #[case] clang: &str,
-        #[case] expected: Option<&str>,
-    ) {
-        let result = std::panic::catch_unwind(|| parse_hip_library_directory_name(rocm, clang));
-
-        match expected {
-            Some(expected_dir) => {
-                // For valid inputs, it must not panic and return the directory name
-                let got = result.expect("should not panic for valid paths");
-                assert_eq!(
-                    got.unwrap(),
-                    expected_dir,
-                    "parsed directory should match the expected name"
-                );
-            }
-            None => {
-                // For invalid inputs, it must panic
-                assert!(
-                    result.is_err(),
-                    "should panic when no valid library directory is present"
-                );
             }
         }
     }
