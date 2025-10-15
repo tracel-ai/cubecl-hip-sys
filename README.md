@@ -65,7 +65,7 @@ Here is the table of the available bindings versions, the deprecated ones could 
 | 43482       | 6.4.0              | 6.4.4348201                  |
 | 43483       | 6.4.1              | 6.4.4348300                  |
 | 43484       | 6.4.2~6.4.3        | 6.4.4348400                  |
-| 51831       | 7.0.0~7.0.1        | 7.0.5183100                  |
+| 51831       | 7.0.0~7.0.1        | 7.0.5183101                  |
 
 ## Running tests
 
