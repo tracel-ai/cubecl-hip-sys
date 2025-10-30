@@ -4,10 +4,28 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      dry-run-only:
+        description: "Run xtask publish in dry-run mode (no publish)"
+        type: boolean
+        required: false
+        default: false
 
 jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: tracel-ai/github-actions/check-version@v5
+        with:
+          tag: ${{ github.ref_name }}
+          cargo_toml_path: Cargo.toml
+
   cubecl-hip-sys:
-    uses: tracel-ai/github-actions/.github/workflows/publish-crate.yml@v1
+    needs:
+      - check-version
+    uses: tracel-ai/github-actions/.github/workflows/publish-crate.yml@v5
     with:
       runner-name: amd-rx7600
       crate: cubecl-hip-sys
