@@ -39,7 +39,7 @@ jobs:
         run: cargo xtask check format
       # --------------------------------------------------------------------------------
       - name: Typos
-        uses: tracel-ai/github-actions/check-typos@v1
+        uses: tracel-ai/github-actions/check-typos@v5
 
   tests:
     needs: checks
