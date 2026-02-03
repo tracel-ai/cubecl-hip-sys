@@ -10,19 +10,19 @@ jobs:
   checks:
     runs-on: amd-rx7600
     steps:
-      # We don't use our github-action because it seems that the cache does not work well
-      # with our AMD runner.
-      # cargo-audit is not found for example whereas it is correctly installed.
       - name: checkout
         uses: actions/checkout@v6
-      - name: install rust
-        uses: dtolnay/rust-toolchain@master
+      # --------------------------------------------------------------------------------
+      - name: Setup Rust
+        uses: tracel-ai/github-actions/setup-rust@v8
         with:
-          components: rustfmt, clippy
-          toolchain: stable
+          # We don't use caching because it seems that the cache does not work well
+          # with our AMD runner, for example `cargo-audit` appears missing althought
+          # it is correctly installed.
+          enable-cache: false
       # --------------------------------------------------------------------------------
       - name: Audit
-        run: cargo xtask check audit
+        run: xtask check audit
       # --------------------------------------------------------------------------------
       - name: Format
         shell: bash
@@ -30,7 +30,7 @@ jobs:
           # work around for colors
           # see: https://github.com/rust-lang/rustfmt/issues/3385
           TERM: xterm-256color
-        run: cargo xtask check format
+        run: xtask check format
       # --------------------------------------------------------------------------------
       - name: Typos
         uses: tracel-ai/github-actions/check-typos@v8
@@ -42,23 +42,22 @@ jobs:
       - name: checkout
         uses: actions/checkout@v6
       # --------------------------------------------------------------------------------
-      - name: install rust
-        uses: dtolnay/rust-toolchain@master
+      - name: Setup Rust
+        uses: tracel-ai/github-actions/setup-rust@v8
         with:
-          components: rustfmt, clippy
-          toolchain: stable
+          enable-cache: false
       # --------------------------------------------------------------------------------
       - name: Lint
-        run: cargo xtask check lint
+        run: xtask check lint
       # --------------------------------------------------------------------------------
       - name: Unit Tests (default ROCm version)
         shell: bash
-        run: cargo xtask test unit
+        run: xtask test unit
       # --------------------------------------------------------------------------------
       - name: Integration Tests (default ROCm version)
         shell: bash
-        run: cargo xtask test integration
+        run: xtask test integration
       # --------------------------------------------------------------------------------
       - name: Documentation Tests
         shell: bash
-        run: cargo xtask doc tests
+        run: xtask doc tests
