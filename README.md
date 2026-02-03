@@ -66,6 +66,7 @@ Here is the table of the available bindings versions, the deprecated ones could 
 | 43483       | 6.4.1              | 6.4.4348300                  |
 | 43484       | 6.4.2~6.4.3        | 6.4.4348400                  |
 | 51831       | 7.0.0~7.0.1        | 7.0.5183101                  |
+| 52802       | 7.1.1              | 7.1.5280201                  |
 
 ## Running tests
 
@@ -77,7 +78,7 @@ Then execute the following xtask command:
 # test ROCm bindings againt the system default ROCm installation if found
 cargo xtask test
 # test a specific version that is not the default by providing a value for HIP_PATH using -p
-xtask test -p /opt/rocm-7.0.0
+cargo xtask test -p /opt/rocm-7.0.0
 ```
 
 ## Generate bindings for a given version of ROCm

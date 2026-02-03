@@ -22,6 +22,7 @@ hip_43482 = []
 hip_43483 = []
 hip_43484 = []
 hip_51831 = []
+hip_52802 = []
 
 [dependencies]
 libc = { workspace = true }
