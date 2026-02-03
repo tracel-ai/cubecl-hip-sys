@@ -20,6 +20,8 @@ jobs:
           # with our AMD runner, for example `cargo-audit` appears missing althought
           # it is correctly installed.
           enable-cache: false
+          # No need to install anything, our self-hosted runner already have all it needs
+          apt-packages: ""
       # --------------------------------------------------------------------------------
       - name: Audit
         run: xtask check audit
@@ -46,6 +48,7 @@ jobs:
         uses: tracel-ai/github-actions/setup-rust@v8
         with:
           enable-cache: false
+          apt-packages: ""
       # --------------------------------------------------------------------------------
       - name: Lint
         run: xtask check lint
