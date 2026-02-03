@@ -3,7 +3,7 @@ include!("src/hipconfig.rs");
 const HIP_FEATURE_PREFIX: &str = "CARGO_FEATURE_HIP_";
 
 /// Make sure that at least one and only one hip feature is set.
-/// If None are set then we use the passed defautl version to set the corresponding feature.
+/// If None are set then we use the passed default version to set the corresponding feature.
 /// Returns the selected HIP patch version.
 fn set_hip_feature(default_version: &str) {
     let mut enabled_features = Vec::new();

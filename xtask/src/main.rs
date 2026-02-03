@@ -6,7 +6,7 @@ extern crate log;
 use std::time::Instant;
 use tracel_xtask::prelude::*;
 
-#[macros::base_commands(Build, Bump, Check, Compile, Doc, Fix, Publish, Validate)]
+#[macros::base_commands(Build, Bump, Check, Clean, Compile, Doc, Fix, Publish, Validate)]
 enum Command {
     /// Generate bindings.
     Bindgen(commands::bindgen::BindgenCmdArgs),
@@ -16,13 +16,13 @@ enum Command {
 
 fn main() -> anyhow::Result<()> {
     let start = Instant::now();
-    let args = init_xtask::<Command>(parse_args::<Command>()?)?;
+    let (args, environment) = init_xtask::<Command>(parse_args::<Command>()?)?;
     match args.command {
         Command::Bindgen(cmd_args) => commands::bindgen::handle_command(cmd_args),
         Command::Test(cmd_args) => {
-            commands::test::handle_command(cmd_args, args.environment, args.context)
+            commands::test::handle_command(cmd_args, environment, args.context)
         }
-        _ => dispatch_base_commands(args),
+        _ => dispatch_base_commands(args, environment),
     }?;
     let duration = start.elapsed();
     info!(
