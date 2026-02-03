@@ -34,6 +34,9 @@ jobs:
           TERM: xterm-256color
         run: xtask check format
       # --------------------------------------------------------------------------------
+      - name: Lint
+        run: xtask check lint
+      # --------------------------------------------------------------------------------
       - name: Typos
         uses: tracel-ai/github-actions/check-typos@v8
 
@@ -50,17 +53,20 @@ jobs:
           enable-cache: false
           apt-packages: ""
       # --------------------------------------------------------------------------------
-      - name: Lint
-        run: xtask check lint
-      # --------------------------------------------------------------------------------
       - name: Unit Tests (default ROCm version)
         shell: bash
-        run: xtask test unit
+        run: |
+          hipconfig -v
+          xtask test unit
       # --------------------------------------------------------------------------------
       - name: Integration Tests (default ROCm version)
         shell: bash
-        run: xtask test integration
+        run: |
+          hipconfig -v
+          xtask test integration
       # --------------------------------------------------------------------------------
       - name: Documentation Tests
         shell: bash
-        run: xtask doc tests
+        run: |
+          hipconfig -v
+          xtask doc tests
