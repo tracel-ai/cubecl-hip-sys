@@ -43,7 +43,7 @@ mod bindings_52802;
 #[cfg(feature = "hip_52802")]
 pub use bindings_52802::*;
 
-# weird patch number, see: https://github.com/ROCm/hip/issues/3881
+// weird patch number, see: https://github.com/ROCm/hip/issues/3881
 #[cfg(feature = "hip_26043")]
 mod bindings_26043;
 #[cfg(feature = "hip_26043")]
