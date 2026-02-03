@@ -37,3 +37,8 @@ pub use bindings_43484::*;
 mod bindings_51831;
 #[cfg(feature = "hip_51831")]
 pub use bindings_51831::*;
+
+#[cfg(feature = "hip_26043")]
+mod bindings_26043;
+#[cfg(feature = "hip_26043")]
+pub use bindings_26043::*;
