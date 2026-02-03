@@ -23,6 +23,7 @@ hip_43483 = []
 hip_43484 = []
 hip_51831 = []
 hip_52802 = []
+hip_26043 = [] # weird patch number, see: https://github.com/ROCm/hip/issues/3881
 
 [dependencies]
 libc = { workspace = true }
