@@ -1,10 +1,5 @@
 name: CI
 
-env:
-  TYPOS_LINK: "https://github.com/crate-ci/typos/releases/download"
-  TYPOS_VERSION: "1.23.4"
-  CUBECL_ROCM_PATH: "/opt/rocm"
-
 on:
   push:
     branches:
@@ -15,12 +10,11 @@ jobs:
   checks:
     runs-on: amd-rx7600
     steps:
-      # --------------------------------------------------------------------------------
       # We don't use our github-action because it seems that the cache does not work well
       # with our AMD runner.
       # cargo-audit is not found for example whereas it is correctly installed.
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: install rust
         uses: dtolnay/rust-toolchain@master
         with:
@@ -39,15 +33,15 @@ jobs:
         run: cargo xtask check format
       # --------------------------------------------------------------------------------
       - name: Typos
-        uses: tracel-ai/github-actions/check-typos@v5
+        uses: tracel-ai/github-actions/check-typos@v8
 
   tests:
     needs: checks
     runs-on: amd-rx7600
     steps:
-      # --------------------------------------------------------------------------------
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+      # --------------------------------------------------------------------------------
       - name: install rust
         uses: dtolnay/rust-toolchain@master
         with:
