@@ -78,7 +78,7 @@ To run tests you need to first meet the expectations for `Prerequisites` section
 Then execute the following xtask command:
 
 ```sh
-# test ROCm bindings againt the system default ROCm installation if found
+# test ROCm bindings against the system default ROCm installation if found
 cargo xtask test
 # test a specific version that is not the default by providing a value for HIP_PATH using -p
 cargo xtask test -p /opt/rocm-7.0.0
