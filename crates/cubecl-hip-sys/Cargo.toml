@@ -28,8 +28,5 @@ hip_52802 = []
 libc = { workspace = true }
 regex = { workspace = true }
 
-[dev-dependencies]
-rstest = { workspace = true }
-
 [build-dependencies]
 regex = { workspace = true }

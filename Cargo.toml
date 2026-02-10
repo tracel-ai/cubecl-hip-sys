@@ -17,7 +17,6 @@ bindgen = "0.70.1"
 libc    = "0.2.159"
 log     = "0.4.22"
 regex   = "1.11.1"
-rstest  = "0.25.0"
 strum   = {version = "0.26.3", features = ["derive"]}
 
 ### For xtask crate ###

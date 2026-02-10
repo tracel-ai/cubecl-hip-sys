@@ -104,33 +104,49 @@ fn parse_hip_patch_number(version: &str) -> std::io::Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rstest::*;
 
-    #[rstest]
-    #[case::standard("6.4.43482-0f2d60242", Some("43482"))]
-    #[case::with_rc_suffix("10.20.54321-rc1", Some("54321"))]
-    #[case::leading_zeros("6.4.00099-test", Some("00099"))]
-    #[case::missing_hyphen("6.4.43482", None)]
-    #[case::completely_invalid("no numbers", None)]
-    fn test_parse_hip_patch_number(#[case] input: &str, #[case] expected: Option<&str>) {
-        let result = std::panic::catch_unwind(|| parse_hip_patch_number(input));
-        match expected {
-            Some(expected_str) => {
+    macro_rules! parse_patch_case {
+        // Valid input: should not panic, should return Some(expected)
+        ($name:ident, $input:expr, Some($expected:expr)) => {
+            #[test]
+            fn $name() {
+                let result = std::panic::catch_unwind(|| parse_hip_patch_number($input));
                 let output = result.expect("should not panic for valid version");
                 assert_eq!(
                     output.unwrap(),
-                    expected_str,
+                    $expected,
                     "parsed patch number should match expected"
                 );
             }
-            None => {
+        };
+        // Invalid input: should panic
+        ($name:ident, $input:expr, None) => {
+            #[test]
+            fn $name() {
+                let result = std::panic::catch_unwind(|| parse_hip_patch_number($input));
                 assert!(result.is_err(), "should panic for invalid version output");
             }
-        }
+        };
     }
 
-    #[rstest]
-    #[case::standard(
+    parse_patch_case!(parse_patch_standard, "6.4.43482-0f2d60242", Some("43482"));
+    parse_patch_case!(parse_patch_with_rc_suffix, "10.20.54321-rc1", Some("54321"));
+    parse_patch_case!(parse_patch_leading_zeros, "6.4.00099-test", Some("00099"));
+    parse_patch_case!(parse_patch_missing_hyphen, "6.4.43482", None);
+    parse_patch_case!(parse_patch_completely_invalid, "no numbers", None);
+
+    macro_rules! latest_hip_feature_case {
+        ($name:ident, $contents:expr, $expected:expr) => {
+            #[test]
+            fn $name() {
+                let got = extract_latest_hip_feature_from_contents($contents);
+                assert_eq!(got.as_deref(), $expected);
+            }
+        };
+    }
+
+    latest_hip_feature_case!(
+        latest_hip_feature_standard,
         r#"[features]
 default = []
 hip_41134 = []
@@ -140,8 +156,10 @@ hip_42134 = []
 hip_43482 = []
 "#,
         Some("hip_43482")
-    )]
-    #[case::unordered(
+    );
+
+    latest_hip_feature_case!(
+        latest_hip_feature_unordered,
         r#"[features]
 hip_42133 = []
 hip_43482 = []
@@ -151,8 +169,10 @@ hip_41134 = []
 default = []
 "#,
         Some("hip_43482")
-    )]
-    #[case::with_comments(
+    );
+
+    latest_hip_feature_case!(
+        latest_hip_feature_with_comments,
         r#"[features]
 # Supported HIP patch versions
 hip_10000 = []
@@ -160,27 +180,24 @@ hip_10000 = []
 hip_02000 = []
 "#,
         Some("hip_10000")
-    )]
-    #[case::no_hip_features(
+    );
+
+    latest_hip_feature_case!(
+        latest_hip_feature_no_hip_features,
         r#"[features]
 default = []
 foo = []
 bar = []
 "#,
         None
-    )]
-    #[case::no_features_section(
+    );
+
+    latest_hip_feature_case!(
+        latest_hip_feature_no_features_section,
         r#"workspace = true
 name = "example"
 version = "0.1.0"
 "#,
         None
-    )]
-    fn test_extract_latest_hip_feature_from_path(
-        #[case] contents: &str,
-        #[case] expected: Option<&str>,
-    ) {
-        let got = extract_latest_hip_feature_from_contents(contents);
-        assert_eq!(got.as_deref(), expected);
-    }
+    );
 }
