@@ -381,7 +381,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-hip-sys"
-version = "7.1.5280201"
+version = "7.1.5280200"
 dependencies = [
  "libc",
  "regex",
