@@ -14,9 +14,9 @@ on:
 
 jobs:
   cubecl-hip-sys:
-    uses: tracel-ai/github-actions/.github/workflows/publish-crate.yml@v8
+    uses: tracel-ai/github-actions/.github/workflows/publish-crate.yml@v9
     with:
-      runner-name: amd-rx7600
+      runs-on: '"amd-rx7600"'
       crate: cubecl-hip-sys
       dry-run-only: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run-only || false }}
     secrets:
