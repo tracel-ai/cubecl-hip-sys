@@ -20,7 +20,7 @@ regex   = "1.11.1"
 strum   = {version = "0.26.3", features = ["derive"]}
 
 ### For xtask crate ###
-tracel-xtask = {version = "=4.12.3"}
+tracel-xtask = "4.13.2"
 
 [profile.dev]
 debug = 0 # Speed up compilation time and not necessary.
