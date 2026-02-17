@@ -3,3 +3,6 @@
 .DS_Store
 .vscode
 .dir-locals.el
+
+.devenv
+.direnv
