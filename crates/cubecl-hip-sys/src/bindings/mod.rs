@@ -42,3 +42,8 @@ pub use bindings_51831::*;
 mod bindings_52802;
 #[cfg(feature = "hip_52802")]
 pub use bindings_52802::*;
+
+#[cfg(feature = "hip_53211")]
+mod bindings_53211;
+#[cfg(feature = "hip_53211")]
+pub use bindings_53211::*;
