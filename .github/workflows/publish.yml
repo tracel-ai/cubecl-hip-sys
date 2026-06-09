@@ -14,7 +14,7 @@ on:
 
 jobs:
   cubecl-hip-sys:
-    uses: tracel-ai/github-actions/.github/workflows/publish-crate.yml@v9
+    uses: tracel-ai/github-actions/.github/workflows/publish-crate.yml@v11
     with:
       runs-on: '"amd-rx7600"'
       crate: cubecl-hip-sys
