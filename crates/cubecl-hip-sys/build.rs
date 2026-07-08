@@ -18,8 +18,28 @@ fn set_hip_feature(default_version: &str) {
     }
 
     if enabled_features.is_empty() {
-        let default_hip_feature = format!("hip_{default_version}");
-        println!("cargo:rustc-cfg=feature=\"{default_hip_feature}\"");
+        // Select the bindings for the detected HIP patch. When the detected patch is NEWER than any
+        // bindings we ship (e.g. ROCm 7.13 reports patch 99004, past the newest shipped 53211), fall
+        // back to the latest available bindings. This is ABI-safe: AMD versions every changed symbol
+        // (`hipGetDevicePropertiesR0600`, `hipDeviceProp_tR0600`, ...), and ROCm 7.13's headers still
+        // map `hipGetDeviceProperties` -> the R0600 revision, so the latest bindings link against the
+        // newer runtime unchanged. This mirrors the no-hipconfig branch (which already clamps to the
+        // latest bindings) instead of emitting a `hip_<patch>` feature that has no bindings module.
+        let toml = std::fs::read_to_string("Cargo.toml")
+            .expect("cubecl-hip-sys build.rs: failed to read Cargo.toml");
+        let requested = format!("hip_{default_version}");
+        let selected = if hip_feature_available(&requested, &toml) {
+            requested
+        } else {
+            let latest = extract_latest_hip_feature_from_path("Cargo.toml")
+                .expect("cubecl-hip-sys build.rs: no hip_<patch> bindings feature in Cargo.toml");
+            println!(
+                "cargo::warning=No cubecl-hip-sys bindings for detected HIP patch {default_version}; \
+                 using the latest available bindings '{latest}' (ABI-compatible via AMD's versioned symbols)."
+            );
+            latest
+        };
+        println!("cargo:rustc-cfg=feature=\"{selected}\"");
     } else {
         panic!("Error: HIP_XXX feature detected!\nHIP_XXX features should not be set manually. Remove the feature and change your HIP_PATH environment variable instead.");
     }
