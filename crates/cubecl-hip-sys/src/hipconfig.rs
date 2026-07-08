@@ -89,6 +89,14 @@ fn extract_latest_hip_feature_from_contents(toml: &str) -> Option<String> {
     max_patch.map(|n| format!("hip_{n}"))
 }
 
+/// Return `true` if `feature` (e.g. `"hip_53211"`) is a `hip_<patch>` bindings feature
+/// declared in the given Cargo.toml contents, i.e. a bindings file we actually ship.
+pub fn hip_feature_available(feature: &str, toml: &str) -> bool {
+    let re = Regex::new(&format!(r"(?m)^\s*{}\s*=\s*\[\]", regex::escape(feature)))
+        .expect("regex should compile");
+    re.is_match(toml)
+}
+
 /// Extract the HIP patch number from hipconfig version output
 fn parse_hip_patch_number(version: &str) -> std::io::Result<String> {
     let re = Regex::new(r"\d+\.\d+\.(\d+)-").expect("regex should compile");
