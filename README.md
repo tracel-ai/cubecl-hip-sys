@@ -70,7 +70,7 @@ Here is the table of the available bindings versions, the deprecated ones could 
 | 52802       | 7.1.1              | 7.1.5280200                  |
 | 26015 (!)   | 7.2.0              | Not released (\*)            |
 | 53211       | 7.2.1~7.2.4        | 7.2.5321100                  |
-| 60850       | 7.14               | 7.14.60850                   |
+| 60850       | 7.14               | 7.14.6085000                 |
 
 (*) These HIP patch version seems wrong, see reported issue: https://github.com/ROCm/hip/issues/3881
 
