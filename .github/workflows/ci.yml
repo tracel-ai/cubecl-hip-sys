@@ -13,8 +13,8 @@ jobs:
       - name: checkout
         uses: actions/checkout@v6
       # --------------------------------------------------------------------------------
-      - name: Setup Rust
-        uses: tracel-ai/github-actions/setup-rust@v8
+      - name: Install Rust
+        uses: tracel-ai/github-actions/install-rust@v11
         with:
           # We don't use caching because it seems that the cache does not work well
           # with our AMD runner, for example `cargo-audit` appears missing althought
@@ -38,7 +38,7 @@ jobs:
         run: xtask check lint
       # --------------------------------------------------------------------------------
       - name: Typos
-        uses: tracel-ai/github-actions/check-typos@v8
+        uses: tracel-ai/github-actions/check-typos@v11
 
   tests:
     needs: checks
@@ -47,8 +47,8 @@ jobs:
       - name: checkout
         uses: actions/checkout@v6
       # --------------------------------------------------------------------------------
-      - name: Setup Rust
-        uses: tracel-ai/github-actions/setup-rust@v8
+      - name: Install Rust
+        uses: tracel-ai/github-actions/install-rust@v11
         with:
           enable-cache: false
           apt-packages: ""
