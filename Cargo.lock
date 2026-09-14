@@ -236,6 +236,7 @@ name = "cubecl-hip-sys"
 version = "7.14.6085000"
 dependencies = [
  "libc",
+ "libloading",
  "regex",
 ]
 

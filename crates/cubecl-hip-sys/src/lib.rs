@@ -9,6 +9,8 @@
 pub mod hipconfig;
 pub use hipconfig::*;
 
+mod dynamic;
+pub use dynamic::is_available;
 mod bindings;
 #[allow(unused)]
 pub use bindings::*;
@@ -21,6 +23,16 @@ mod tests {
 
     #[test]
     fn test_launch_kernel_end_to_end() {
+        if !is_available() {
+            return;
+        }
+
+        let mut device_count = 0;
+        // SAFETY: `device_count` is a valid pointer to writable storage.
+        if unsafe { hipGetDeviceCount(&mut device_count) } != HIP_SUCCESS || device_count == 0 {
+            return;
+        }
+
         // Kernel that computes y values of a linear equation in slop-intercept form
         let source = CString::new(
             r#"
