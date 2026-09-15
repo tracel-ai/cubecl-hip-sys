@@ -50,7 +50,7 @@ unsafe fn load_libraries() -> Result<Libraries, String> {
 fn search_paths() -> Vec<PathBuf> {
     ["ROCM_PATH", "HIP_PATH"]
         .into_iter()
-        .filter_map(|variable| env::var_os(variable))
+        .filter_map(env::var_os)
         .flat_map(|path| {
             let path = PathBuf::from(path);
             [path.join("lib"), path]

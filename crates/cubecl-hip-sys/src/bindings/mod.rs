@@ -1,3 +1,9 @@
+#![allow(ambiguous_glob_reexports)]
+#![allow(clashing_extern_declarations)]
+#![allow(dead_code)]
+#![allow(suspicious_runtime_symbol_definitions)]
+#![allow(unused_imports)]
+
 #[cfg(feature = "hip_41134")]
 mod bindings_41134 {
     include!(concat!(env!("OUT_DIR"), "/bindings_41134.rs"));

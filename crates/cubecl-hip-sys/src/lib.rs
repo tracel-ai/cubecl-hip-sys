@@ -11,6 +11,10 @@ pub use hipconfig::*;
 
 mod dynamic;
 pub use dynamic::is_available;
+// The bindings are generated from multiple HIP versions. They intentionally
+// contain duplicate C declarations and expose the selected version through
+// glob re-exports, which newer compiler lints otherwise reject.
+#[allow(clippy::missing_safety_doc)]
 mod bindings;
 #[allow(unused)]
 pub use bindings::*;
