@@ -23,6 +23,7 @@ pub use bindings::*;
 #[cfg(test)]
 mod tests {
     use super::bindings::*;
+    use super::is_available;
     use std::{ffi::CString, ptr, time::Instant};
 
     #[test]
