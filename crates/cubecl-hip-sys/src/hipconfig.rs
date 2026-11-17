@@ -3,6 +3,32 @@ use std::process::Command;
 use regex::Regex;
 
 pub const HIPCONFIG: &str = "hipconfig";
+pub const HIP_VERSION_OVERRIDE_ENV: &str = "CUBECL_HIP_SYS_HIP_VERSION_OVERRIDE";
+pub const HIP_VERSION_DEFAULT_ENV: &str = "CUBECL_HIP_SYS_HIP_VERSION_DEFAULT";
+
+/// Read the HIP patch number held by the environment variable `name`, if set.
+/// Panics if the value is not one of the `hip_<patch>` features declared in the cargo file at `path`.
+pub fn get_hip_patch_version_from_env<P: AsRef<std::path::Path>>(
+    name: &str,
+    path: P,
+) -> std::io::Result<Option<String>> {
+    let Ok(value) = std::env::var(name) else {
+        return Ok(None);
+    };
+    let supported = extract_hip_patches_from_contents(&std::fs::read_to_string(path)?);
+    Ok(Some(validate_hip_patch(name, &value, &supported)))
+}
+
+fn validate_hip_patch(name: &str, value: &str, supported: &[String]) -> String {
+    let patch = value.trim();
+    if !supported.iter().any(|candidate| candidate == patch) {
+        panic!(
+            "{name}='{value}' is not a supported HIP patch number. Supported values: {}",
+            supported.join(", ")
+        );
+    }
+    patch.to_owned()
+}
 
 /// Retrieve the ROCM_PATH with `hipconfig -R` command.
 pub fn get_rocm_path() -> std::io::Result<String> {
@@ -71,22 +97,23 @@ fn exec_hipconfig(args: &[&str]) -> std::io::Result<String> {
     }
 }
 
+/// Extract every `<patch>` of the `hip_<patch>` features from the given Cargo.toml contents.
+fn extract_hip_patches_from_contents(toml: &str) -> Vec<String> {
+    // Matches lines like `hip_12345 = []`, capturing the digits.
+    let re = Regex::new(r"(?m)^\s*hip_(\d+)\s*=\s*\[\]").expect("regex should compile");
+    re.captures_iter(toml)
+        .map(|capture| capture[1].to_owned())
+        .collect()
+}
+
 /// Extract the latest `hip_<patch>` feature from the given Cargo.toml contents.
 /// Return `Some("hip_<max_patch>")` or `None` if no such feature is found.
 fn extract_latest_hip_feature_from_contents(toml: &str) -> Option<String> {
-    // Matches lines like `hip_12345 = []`, capturing the digits.
-    let re = Regex::new(r"(?m)^\s*hip_(\d+)\s*=\s*\[\]").expect("regex should compile");
-    let mut max_patch: Option<u32> = None;
-
-    for cap in re.captures_iter(toml) {
-        if let Some(m) = cap.get(1) {
-            if let Ok(n) = m.as_str().parse::<u32>() {
-                max_patch = Some(max_patch.map_or(n, |cur| cur.max(n)));
-            }
-        }
-    }
-
-    max_patch.map(|n| format!("hip_{n}"))
+    extract_hip_patches_from_contents(toml)
+        .iter()
+        .filter_map(|patch| patch.parse::<u32>().ok())
+        .max()
+        .map(|patch| format!("hip_{patch}"))
 }
 
 /// Extract the HIP patch number from hipconfig version output
@@ -104,6 +131,43 @@ fn parse_hip_patch_number(version: &str) -> std::io::Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn supported_patches() -> Vec<String> {
+        extract_hip_patches_from_contents("[features]\nhip_52802 = []\nhip_53211 = []\nfoo = []\n")
+    }
+
+    #[test]
+    fn extract_hip_patches_lists_every_hip_feature() {
+        assert_eq!(supported_patches(), ["52802", "53211"]);
+    }
+
+    #[test]
+    fn override_accepts_supported_patch() {
+        assert_eq!(
+            validate_hip_patch(HIP_VERSION_OVERRIDE_ENV, "53211", &supported_patches()),
+            "53211"
+        );
+    }
+
+    #[test]
+    fn override_trims_surrounding_whitespace() {
+        assert_eq!(
+            validate_hip_patch(HIP_VERSION_OVERRIDE_ENV, " 52802\n", &supported_patches()),
+            "52802"
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "Supported values: 52802, 53211")]
+    fn override_rejects_unknown_patch() {
+        validate_hip_patch(HIP_VERSION_OVERRIDE_ENV, "99999", &supported_patches());
+    }
+
+    #[test]
+    #[should_panic(expected = "not a supported HIP patch number")]
+    fn override_rejects_non_numeric_value() {
+        validate_hip_patch(HIP_VERSION_OVERRIDE_ENV, "7.2.4", &supported_patches());
+    }
 
     macro_rules! parse_patch_case {
         // Valid input: should not panic, should return Some(expected)
