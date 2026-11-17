@@ -3,25 +3,27 @@ use std::process::Command;
 use regex::Regex;
 
 pub const HIPCONFIG: &str = "hipconfig";
-pub const HIP_VERSION_ENV: &str = "CUBECL_HIP_SYS_HIP_VERSION";
+pub const HIP_VERSION_OVERRIDE_ENV: &str = "CUBECL_HIP_SYS_HIP_VERSION_OVERRIDE";
+pub const HIP_VERSION_DEFAULT_ENV: &str = "CUBECL_HIP_SYS_HIP_VERSION_DEFAULT";
 
-/// Read the HIP patch number forced through `CUBECL_HIP_SYS_HIP_VERSION`, if set.
+/// Read the HIP patch number held by the environment variable `name`, if set.
 /// Panics if the value is not one of the `hip_<patch>` features declared in the cargo file at `path`.
-pub fn get_hip_patch_version_override<P: AsRef<std::path::Path>>(
+pub fn get_hip_patch_version_from_env<P: AsRef<std::path::Path>>(
+    name: &str,
     path: P,
 ) -> std::io::Result<Option<String>> {
-    let Ok(value) = std::env::var(HIP_VERSION_ENV) else {
+    let Ok(value) = std::env::var(name) else {
         return Ok(None);
     };
     let supported = extract_hip_patches_from_contents(&std::fs::read_to_string(path)?);
-    Ok(Some(validate_hip_patch_override(&value, &supported)))
+    Ok(Some(validate_hip_patch(name, &value, &supported)))
 }
 
-fn validate_hip_patch_override(value: &str, supported: &[String]) -> String {
+fn validate_hip_patch(name: &str, value: &str, supported: &[String]) -> String {
     let patch = value.trim();
     if !supported.iter().any(|candidate| candidate == patch) {
         panic!(
-            "{HIP_VERSION_ENV}='{value}' is not a supported HIP patch number. Supported values: {}",
+            "{name}='{value}' is not a supported HIP patch number. Supported values: {}",
             supported.join(", ")
         );
     }
@@ -142,7 +144,7 @@ mod tests {
     #[test]
     fn override_accepts_supported_patch() {
         assert_eq!(
-            validate_hip_patch_override("53211", &supported_patches()),
+            validate_hip_patch(HIP_VERSION_OVERRIDE_ENV, "53211", &supported_patches()),
             "53211"
         );
     }
@@ -150,7 +152,7 @@ mod tests {
     #[test]
     fn override_trims_surrounding_whitespace() {
         assert_eq!(
-            validate_hip_patch_override(" 52802\n", &supported_patches()),
+            validate_hip_patch(HIP_VERSION_OVERRIDE_ENV, " 52802\n", &supported_patches()),
             "52802"
         );
     }
@@ -158,13 +160,13 @@ mod tests {
     #[test]
     #[should_panic(expected = "Supported values: 52802, 53211")]
     fn override_rejects_unknown_patch() {
-        validate_hip_patch_override("99999", &supported_patches());
+        validate_hip_patch(HIP_VERSION_OVERRIDE_ENV, "99999", &supported_patches());
     }
 
     #[test]
     #[should_panic(expected = "not a supported HIP patch number")]
     fn override_rejects_non_numeric_value() {
-        validate_hip_patch_override("7.2.4", &supported_patches());
+        validate_hip_patch(HIP_VERSION_OVERRIDE_ENV, "7.2.4", &supported_patches());
     }
 
     macro_rules! parse_patch_case {

@@ -32,9 +32,10 @@ fn main() {
     generate_dynamic_bindings().expect("Should generate dynamic HIP bindings");
     println!("cargo::rerun-if-env-changed=ROCM_PATH");
     println!("cargo::rerun-if-env-changed=HIP_PATH");
-    println!("cargo::rerun-if-env-changed={HIP_VERSION_ENV}");
-    let hip_patch_override =
-        get_hip_patch_version_override("Cargo.toml").expect("Should read Cargo.toml");
+    println!("cargo::rerun-if-env-changed={HIP_VERSION_OVERRIDE_ENV}");
+    println!("cargo::rerun-if-env-changed={HIP_VERSION_DEFAULT_ENV}");
+    let hip_patch_override = get_hip_patch_version_from_env(HIP_VERSION_OVERRIDE_ENV, "Cargo.toml")
+        .expect("Should read Cargo.toml");
     if let Some(patch) = hip_patch_override {
         set_hip_feature(&patch);
         return;
@@ -42,18 +43,24 @@ fn main() {
     let hip_system_patch = get_hip_patch_version();
     if let Ok(ref patch) = hip_system_patch {
         set_hip_feature(patch);
-    } else {
-        // There is no 'hipconfig' on the system, so we assume there is no HIP installation available on the system.
-        // Nevertheless we still want crates that depend on the bindings to compile even if they don't need to
-        // link against the HIP libraries, especially for cargo clippy.
-        // We decide to set the last version of HIP bindings as the default for this purpose, i.e. the HIP version that
-        // corresponds to last published version of 'cubecl-hip-sys'.
-        let feature = extract_latest_hip_feature_from_path("Cargo.toml").unwrap();
-        println!(
-            "cargo::warning=Defaulting to the latest feature of HIP bindings available: {feature}"
-        );
-        println!("cargo:rustc-cfg=feature=\"{feature}\"");
+        return;
     }
+    // There is no 'hipconfig' on the system, so we assume there is no HIP installation available on the system.
+    // Nevertheless we still want crates that depend on the bindings to compile even if they don't need to
+    // link against the HIP libraries, especially for cargo clippy.
+    let hip_patch_default = get_hip_patch_version_from_env(HIP_VERSION_DEFAULT_ENV, "Cargo.toml")
+        .expect("Should read Cargo.toml");
+    if let Some(patch) = hip_patch_default {
+        set_hip_feature(&patch);
+        return;
+    }
+    // Without a requested default we use the last version of HIP bindings, i.e. the HIP version that
+    // corresponds to last published version of 'cubecl-hip-sys'.
+    let feature = extract_latest_hip_feature_from_path("Cargo.toml").unwrap();
+    println!(
+        "cargo::warning=Defaulting to the latest feature of HIP bindings available: {feature}"
+    );
+    println!("cargo:rustc-cfg=feature=\"{feature}\"");
 }
 
 /// Convert HIP declarations into wrappers that resolve their symbols at runtime.
