@@ -32,6 +32,13 @@ fn main() {
     generate_dynamic_bindings().expect("Should generate dynamic HIP bindings");
     println!("cargo::rerun-if-env-changed=ROCM_PATH");
     println!("cargo::rerun-if-env-changed=HIP_PATH");
+    println!("cargo::rerun-if-env-changed={HIP_VERSION_ENV}");
+    let hip_patch_override =
+        get_hip_patch_version_override("Cargo.toml").expect("Should read Cargo.toml");
+    if let Some(patch) = hip_patch_override {
+        set_hip_feature(&patch);
+        return;
+    }
     let hip_system_patch = get_hip_patch_version();
     if let Ok(ref patch) = hip_system_patch {
         set_hip_feature(patch);

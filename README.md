@@ -56,6 +56,10 @@ the `hipconfig` utility.
 To specify a different version of HIP manually set the environment variable HIP_PATH to a valid HIP installation path. You can
 verify that your system points to the expected version with the command `hipconfig --version`.
 
+To build on a machine without ROCm (no `hipconfig`), set the environment variable `CUBECL_HIP_SYS_HIP_VERSION` to the HIP
+patch number of the bindings to compile, for instance `CUBECL_HIP_SYS_HIP_VERSION=53211` for ROCm 7.2.1~7.2.4. It takes precedence
+over `hipconfig`. A value that is not in the table below panics, listing the supported patch numbers.
+
 Remark: Don't set manually the `hip_xxx` feature for this crate. This is the responsibility of the `build.rs` script to set it
 accordingly to your `hipconfig` output.
 
